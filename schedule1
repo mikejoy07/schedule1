@@ -2,103 +2,96 @@
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tính giá bán sản phẩm</title>
+  <title>Đồng hồ bấm giờ</title>
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
     body {
-      margin: 0;
-      background-color: #121212;
-      color: #ffffff;
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-
-    .container {
+      font-family: sans-serif;
       text-align: center;
-      padding: 30px;
-      background-color: #1e1e1e;
-      border-radius: 12px;
-      box-shadow: 0 0 10px rgba(0, 255, 200, 0.2);
-      max-width: 400px;
-      width: 100%;
+      margin-top: 100px;
+      background-color: #f5f5f5;
     }
-
-    h2 {
-      margin-bottom: 20px;
+    h1 {
+      font-size: 48px;
     }
-
-    label {
-      display: block;
-      margin: 10px 0 5px;
-      text-align: left;
+    #time {
+      font-size: 64px;
+      margin: 20px;
     }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      background-color: #2a2a2a;
-      color: #fff;
-      border: 1px solid #444;
-      border-radius: 6px;
+    button {
+      font-size: 20px;
+      margin: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 8px;
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
     }
-
-    .result {
-      margin-top: 20px;
-      font-size: 16px;
-      color: #00ffcc;
-      text-align: left;
+    button:hover {
+      background-color: #45a049;
+    }
+    button:disabled {
+      background-color: #aaa;
+      cursor: default;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Tính giá bán sản phẩm</h2>
-
-    <label for="giaNhap">Giá nhập sản phẩm:</label>
-    <input type="number" id="giaNhap" placeholder="Nhập giá nhập" />
-
-    <label for="soLuong">Số lượng sản phẩm:</label>
-    <input type="number" id="soLuong" placeholder="Ví dụ: 10" value="1" />
-
-    <label for="giamGia">Phần trăm giảm giá (%):</label>
-    <input type="number" id="giamGia" placeholder="Ví dụ: 10" value="0" />
-
-    <div class="result" id="ketQua"></div>
+  <h1>Đồng hồ bấm giờ</h1>
+  <div id="time">00:00:00</div>
+  <div>
+    <button id="startBtn">Bắt đầu</button>
+    <button id="pauseBtn" disabled>Tạm dừng</button>
+    <button id="resetBtn">Reset</button>
   </div>
 
   <script>
-    const giaNhapEl = document.getElementById('giaNhap');
-    const soLuongEl = document.getElementById('soLuong');
-    const giamGiaEl = document.getElementById('giamGia');
-    const ketQuaEl = document.getElementById('ketQua');
+    let startTime = 0;
+    let elapsed = 0;
+    let timerInterval;
+    let running = false;
 
-    function tinhToan() {
-      const giaNhap = parseFloat(giaNhapEl.value) || 0;
-      const soLuong = parseInt(soLuongEl.value) || 1;
-      const giamGia = parseFloat(giamGiaEl.value) || 0;
-
-      const giaBan = giaNhap * 1.5;
-      const tongGia = giaBan * soLuong;
-      const giaThiTruong = tongGia * (1 - giamGia / 100);
-
-      ketQuaEl.innerHTML = `
-        Giá bán 1 sản phẩm: ${giaBan.toLocaleString()}<br>
-        Tổng giá bán (${soLuong} sản phẩm): ${tongGia.toLocaleString()}<br>
-        Giá bán thị trường sau giảm ${giamGia}%: ${giaThiTruong.toLocaleString()}
-      `;
+    function formatTime(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+      const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+      const seconds = String(totalSeconds % 60).padStart(2, '0');
+      return `${hours}:${minutes}:${seconds}`;
     }
 
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') {
-        tinhToan();
+    function updateTime() {
+      const now = Date.now();
+      const diff = now - startTime + elapsed;
+      document.getElementById('time').textContent = formatTime(diff);
+    }
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+      if (!running) {
+        startTime = Date.now();
+        timerInterval = setInterval(updateTime, 1000);
+        running = true;
+        document.getElementById('startBtn').textContent = 'Tiếp tục';
+        document.getElementById('pauseBtn').disabled = false;
       }
+    });
+
+    document.getElementById('pauseBtn').addEventListener('click', () => {
+      if (running) {
+        clearInterval(timerInterval);
+        elapsed += Date.now() - startTime;
+        running = false;
+        document.getElementById('pauseBtn').disabled = true;
+      }
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', () => {
+      clearInterval(timerInterval);
+      startTime = 0;
+      elapsed = 0;
+      running = false;
+      document.getElementById('time').textContent = '00:00:00';
+      document.getElementById('startBtn').textContent = 'Bắt đầu';
+      document.getElementById('pauseBtn').disabled = true;
     });
   </script>
 </body>
